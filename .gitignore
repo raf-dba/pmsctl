@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Runtime pmsctl
+var/
+
+# Local environment
+.env
+
+# Word docs
+*.doc
+*.docx
+

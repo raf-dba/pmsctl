@@ -1,0 +1,24 @@
+{
+  "name": "prod_to_dr",
+  "description": "Ejemplo de configuracion primaria a standby para el piloto pmsctl.",
+  "primary": {
+    "host": "local",
+    "local": true,
+    "ssh_user": "oracle",
+    "oracle_home": "/u01/app/oracle/product/19.0.0/dbhome_1",
+    "oracle_sid": "PROD",
+    "archive_dest": "/u01/app/oracle/arch/PROD"
+  },
+  "standby": {
+    "host": "standby.example.local",
+    "ssh_user": "oracle",
+    "oracle_home": "/u01/app/oracle/product/19.0.0/dbhome_1",
+    "oracle_sid": "PRODDR",
+    "archive_dest": "/u01/app/oracle/arch/PRODDR"
+  },
+  "settings": {
+    "ssh_timeout": 20,
+    "lag_warning_minutes": 30,
+    "lag_critical_minutes": 60
+  }
+}
