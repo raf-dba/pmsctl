@@ -16,7 +16,7 @@ from pmsctl import paths
 def utc_now():
     """Devuelve la fecha actual en UTC con un formato estable."""
 
-    return datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def log_event(configuration, command, result, message="", details=None):
