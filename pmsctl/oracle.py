@@ -23,7 +23,7 @@ whenever sqlerror exit sql.sqlcode
 def run_sqlplus(node, sql, timeout=30):
     """Ejecuta SQL*Plus localmente en el nodo indicado.
 
-    La conexión es ``/ as sysdba`` porque el diseño evita almacenar contraseñas
+    La conexión es ``/ as sysdba`` para evitar almacenar contraseñas
     de base de datos. El usuario del sistema operativo debe pertenecer a los
     grupos Oracle adecuados.
     """

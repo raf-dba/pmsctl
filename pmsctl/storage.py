@@ -3,6 +3,7 @@
 Se usan ficheros JSON para mantener el piloto simple, auditable y compatible con
 Python 3.6 sin dependencias externas. Cada configuración vive en un fichero
 independiente para permitir varias réplicas gestionadas por el mismo nodo.
+En un futuro se puede plantear usar una BBDD SQLite o MySQL
 """
 
 import json

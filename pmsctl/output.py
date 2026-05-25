@@ -3,7 +3,7 @@
 import json
 import sys
 
-
+"""Modifico algunas etiquetas para hacerlas más comprensibles."""
 TITLE_OVERRIDES = {
     "database_role": "ORACLE DATABASE ROLE",
     "role": "PMS ROLE",

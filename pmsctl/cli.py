@@ -12,7 +12,7 @@ def build_parser():
 
     parser = argparse.ArgumentParser(
         prog="pmsctl",
-        description="Piloto mínimo de Poor Man Standby Control para Oracle SE2.",
+        description="Poor Man Standby Control para Oracle SE2.",
     )
     parser.add_argument("--json", action="store_true", help="Muestra la salida en formato JSON.")
     parser.add_argument("--version", action="version", version="pmsctl %s" % __version__)
@@ -65,7 +65,7 @@ def dispatch(args):
 
 
 def main(argv=None):
-    """Función principal usada por el ejecutable y por las pruebas."""
+    """Función principal usada por el ejecutable."""
 
     parser = build_parser()
     args = parser.parse_args(argv)
