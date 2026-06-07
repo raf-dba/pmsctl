@@ -63,6 +63,10 @@ pmsctl --json status prod_to_dr
   y standby. `CURRENT SCN` procede de `v$database` y puede ser cero con la base
   montada. `DATAFILE CHECKPOINT SCN MIN` y `DATAFILE CHECKPOINT SCN MAX`
   muestran el intervalo de checkpoints de los datafiles, excluyendo `PDB$SEED`.
+  También muestra el último archived redo de la primaria. En standby considera
+  aplicado el último archived redo cuyo `NEXT_CHANGE#` está cubierto por el
+  checkpoint mínimo de los datafiles; que un redo tenga `ARCHIVED='YES'` no
+  implica por sí solo que ya se haya aplicado.
 - `lag` consulta `v$archived_log` para comparar ultima secuencia archivada en
   primaria y ultima secuencia aplicada en standby.
 - `history` muestra eventos registrados en `var/logs/events.jsonl`.

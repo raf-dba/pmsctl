@@ -7,7 +7,12 @@ def _status_from_node(label, node, timeout):
     """Obtiene estado de un nodo y lo etiqueta como primaria o standby."""
 
     data = oracle.database_status(node, timeout=timeout)
-    return {
+    redo = oracle.redo_summary(
+        node,
+        applied_through_datafiles=label == "STANDBY",
+        timeout=timeout,
+    )
+    status = {
         "role": label,
         "host": node.get("host"),
         "oracle_sid": node.get("oracle_sid"),
@@ -22,6 +27,17 @@ def _status_from_node(label, node, timeout):
         "datafile_checkpoint_scn_max": data.get("datafile_checkpoint_scn_max", "UNKNOWN"),
         "error": data.get("error"),
     }
+    if label == "STANDBY":
+        status["last_applied_redo_thread"] = redo.get("last_redo_thread", "UNKNOWN")
+        status["last_applied_redo_sequence"] = redo.get("last_redo_sequence", "UNKNOWN")
+        status["last_applied_redo_next_change"] = redo.get("last_redo_next_change", "UNKNOWN")
+    else:
+        status["last_archived_redo_thread"] = redo.get("last_redo_thread", "UNKNOWN")
+        status["last_archived_redo_sequence"] = redo.get("last_redo_sequence", "UNKNOWN")
+        status["last_archived_redo_next_change"] = redo.get("last_redo_next_change", "UNKNOWN")
+    if redo.get("reachable") != "YES":
+        status["redo_error"] = redo.get("error")
+    return status
 
 
 def import_config(path):
