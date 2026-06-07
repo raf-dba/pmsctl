@@ -18,6 +18,8 @@ def _status_from_node(label, node, timeout):
         "open_mode": data.get("open_mode", "UNKNOWN"),
         "log_mode": data.get("log_mode", "UNKNOWN"),
         "current_scn": data.get("current_scn", "UNKNOWN"),
+        "datafile_checkpoint_scn_min": data.get("datafile_checkpoint_scn_min", "UNKNOWN"),
+        "datafile_checkpoint_scn_max": data.get("datafile_checkpoint_scn_max", "UNKNOWN"),
         "error": data.get("error"),
     }
 

@@ -59,7 +59,10 @@ pmsctl --json status prod_to_dr
 
 - `validate` comprueba SSH, rutas, `ORACLE_HOME`, `sqlplus`, consulta basica y
   modo `ARCHIVELOG` en primaria.
-- `status` consulta `v$instance` y `v$database` en primaria y standby.
+- `status` consulta `v$instance`, `v$database` y `v$datafile_header` en primaria
+  y standby. `CURRENT SCN` procede de `v$database` y puede ser cero con la base
+  montada. `DATAFILE CHECKPOINT SCN MIN` y `DATAFILE CHECKPOINT SCN MAX`
+  muestran el intervalo de checkpoints de los datafiles, excluyendo `PDB$SEED`.
 - `lag` consulta `v$archived_log` para comparar ultima secuencia archivada en
   primaria y ultima secuencia aplicada en standby.
 - `history` muestra eventos registrados en `var/logs/events.jsonl`.

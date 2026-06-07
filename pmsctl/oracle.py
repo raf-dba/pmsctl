@@ -46,7 +46,14 @@ def parse_key_values(output):
 
 
 def database_status(node, timeout=30):
-    """Obtiene un estado básico de instancia y base de datos."""
+    """Obtiene un estado básico de instancia, base de datos y datafiles.
+
+    ``v$database.current_scn`` puede devolver cero cuando la base de datos está
+    montada. Los checkpoints de ``v$datafile_header`` permiten conocer el SCN
+    alcanzado por los datafiles después de una recuperación. Se excluye
+    ``PDB$SEED`` (CON_ID=2) porque es de solo lectura y su checkpoint no avanza
+    con la actividad normal de la base de datos.
+    """
 
     sql = """
 select 'INSTANCE_STATUS=' || status from v$instance;
@@ -55,6 +62,12 @@ select 'DATABASE_ROLE=' || database_role from v$database;
 select 'OPEN_MODE=' || open_mode from v$database;
 select 'LOG_MODE=' || log_mode from v$database;
 select 'CURRENT_SCN=' || current_scn from v$database;
+select 'DATAFILE_CHECKPOINT_SCN_MIN=' || nvl(to_char(min(checkpoint_change#)), 'UNKNOWN')
+  from v$datafile_header
+ where con_id <> 2;
+select 'DATAFILE_CHECKPOINT_SCN_MAX=' || nvl(to_char(max(checkpoint_change#)), 'UNKNOWN')
+  from v$datafile_header
+ where con_id <> 2;
 """
     result = run_sqlplus(node, sql, timeout=timeout)
     if not result.ok:
