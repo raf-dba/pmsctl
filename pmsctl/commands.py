@@ -3,15 +3,10 @@
 from pmsctl import audit, oracle, storage
 
 
-def _status_from_node(label, node, timeout):
+def _status_from_node(label, node, timeout, detail=False):
     """Obtiene estado de un nodo y lo etiqueta como primaria o standby."""
 
-    data = oracle.database_status(node, timeout=timeout)
-    redo = oracle.redo_summary(
-        node,
-        applied_through_datafiles=label == "STANDBY",
-        timeout=timeout,
-    )
+    data = oracle.database_status(node, timeout=timeout, detail=detail)
     status = {
         "role": label,
         "host": node.get("host"),
@@ -23,10 +18,18 @@ def _status_from_node(label, node, timeout):
         "open_mode": data.get("open_mode", "UNKNOWN"),
         "log_mode": data.get("log_mode", "UNKNOWN"),
         "current_scn": data.get("current_scn", "UNKNOWN"),
-        "datafile_checkpoint_scn_min": data.get("datafile_checkpoint_scn_min", "UNKNOWN"),
-        "datafile_checkpoint_scn_max": data.get("datafile_checkpoint_scn_max", "UNKNOWN"),
         "error": data.get("error"),
     }
+    if not detail:
+        return status
+
+    status["datafile_checkpoint_scn_min"] = data.get("datafile_checkpoint_scn_min", "UNKNOWN")
+    status["datafile_checkpoint_scn_max"] = data.get("datafile_checkpoint_scn_max", "UNKNOWN")
+    redo = oracle.redo_summary(
+        node,
+        applied_through_datafiles=label == "STANDBY",
+        timeout=timeout,
+    )
     if label == "STANDBY":
         status["last_applied_redo_thread"] = redo.get("last_redo_thread", "UNKNOWN")
         status["last_applied_redo_sequence"] = redo.get("last_redo_sequence", "UNKNOWN")
@@ -79,13 +82,13 @@ def validate(name):
     return {"configuration": name, "action": "VALIDATE", **result}
 
 
-def status(name):
+def status(name, detail=False):
     """Comando ``status``."""
 
     config = storage.load_config(name)
     timeout = int(config.get("settings", {}).get("ssh_timeout", 20))
-    primary = _status_from_node("PRIMARY", config["primary"], timeout)
-    standby = _status_from_node("STANDBY", config["standby"], timeout)
+    primary = _status_from_node("PRIMARY", config["primary"], timeout, detail=detail)
+    standby = _status_from_node("STANDBY", config["standby"], timeout, detail=detail)
     result = "OK" if primary["reachable"] == "YES" and standby["reachable"] == "YES" else "WARNING"
     state = storage.load_state(name)
     state["state"] = "STATUS_CHECKED"
