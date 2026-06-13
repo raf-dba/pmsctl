@@ -32,12 +32,6 @@ def build_parser():
 
     status = subparsers.add_parser("status", help="Consulta el estado de primaria y standby.")
     status.add_argument("name", help="Nombre lógico de configuración.")
-    status.add_argument(
-        "-d",
-        "--detail",
-        action="store_true",
-        help="Incluye checkpoints de datafiles e información de redo.",
-    )
 
     lag = subparsers.add_parser("lag", help="Consulta el lag estimado de réplica.")
     lag.add_argument("name", help="Nombre lógico de configuración.")
@@ -62,7 +56,7 @@ def dispatch(args):
     elif args.command == "validate":
         return commands.validate(args.name)
     elif args.command == "status":
-        return commands.status(args.name, detail=args.detail)
+        return commands.status(args.name)
     elif args.command == "lag":
         return commands.lag(args.name)
     elif args.command == "history":
@@ -82,7 +76,7 @@ def main(argv=None):
     try:
         result = dispatch(args)
         output.emit(result, json_mode=args.json)
-        return 0 if result.get("result") in ("OK", None) else 1
+        return 0 if result.get("result") in ("OK", "SUCCESS", None) else 1
     except PmsctlError as exc:
         output.emit(exc.to_dict(), json_mode=args.json)
         return 1

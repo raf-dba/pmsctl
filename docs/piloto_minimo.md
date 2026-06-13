@@ -40,12 +40,16 @@ pmsctl config show prod_to_dr
 No se deben incluir contrasenas en el JSON. El piloto rechaza campos cuyo nombre
 parezca contener secretos.
 
+Los ajustes `max_transfer_lag_minutes` y `max_apply_lag_minutes` permiten
+definir por separado los umbrales que utiliza el comando `lag`. Si no existen,
+se utiliza `lag_warning_minutes` para mantener compatibilidad con configuraciones
+anteriores.
+
 ## Comandos principales
 
 ```bash
 pmsctl validate prod_to_dr
 pmsctl status prod_to_dr
-pmsctl status prod_to_dr --detail
 pmsctl lag prod_to_dr
 pmsctl history prod_to_dr
 ```
@@ -60,17 +64,13 @@ pmsctl --json status prod_to_dr
 
 - `validate` comprueba SSH, rutas, `ORACLE_HOME`, `sqlplus`, consulta basica y
   modo `ARCHIVELOG` en primaria.
-- `status` consulta el estado básico mediante `v$instance` y `v$database`,
-  manteniendo una salida breve.
-- `status --detail` o `status -d` añade consultas a `v$datafile_header` y
-  `v$archived_log`. `DATAFILE CHECKPOINT SCN MIN` y
-  `DATAFILE CHECKPOINT SCN MAX` muestran el intervalo de checkpoints de los
-  datafiles, excluyendo `PDB$SEED`. También muestra el último archived redo de
-  la primaria. En standby considera aplicado el último archived redo cuyo
-  `NEXT_CHANGE#` está cubierto por el checkpoint mínimo de los datafiles; que
-  un redo tenga `ARCHIVED='YES'` no implica por sí solo que ya se haya aplicado.
-- `lag` consulta `v$archived_log` para comparar ultima secuencia archivada en
-  primaria y ultima secuencia aplicada en standby.
+- `status` muestra el estado operativo de primaria y replica, el ultimo redo
+  archivado, transferido y aplicado, y el ultimo estado valido conocido si un
+  nodo no esta disponible.
+- `lag` diferencia el retraso de transferencia del retraso de aplicacion. En la
+  replica considera aplicado el ultimo archived redo cuyo `NEXT_CHANGE#` esta
+  cubierto por el checkpoint minimo de los datafiles; que un redo tenga
+  `ARCHIVED='YES'` no implica por si solo que ya se haya aplicado.
 - `history` muestra eventos registrados en `var/logs/events.jsonl`.
 
 Si Oracle no puede proporcionar un dato, el piloto devuelve `UNKNOWN` en lugar de

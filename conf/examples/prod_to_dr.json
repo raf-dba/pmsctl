@@ -18,6 +18,8 @@
   },
   "settings": {
     "ssh_timeout": 20,
+    "max_transfer_lag_minutes": 10,
+    "max_apply_lag_minutes": 10,
     "lag_warning_minutes": 30,
     "lag_critical_minutes": 60
   }

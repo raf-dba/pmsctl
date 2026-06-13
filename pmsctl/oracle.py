@@ -45,32 +45,28 @@ def parse_key_values(output):
     return data
 
 
-def database_status(node, timeout=30, detail=False):
-    """Obtiene un estado básico de instancia y base de datos.
+def database_status(node, timeout=30):
+    """Obtiene los datos operativos que necesita el comando ``status``.
 
-    ``v$database.current_scn`` puede devolver cero cuando la base de datos está
-    montada. Si se solicita detalle, los checkpoints de ``v$datafile_header``
-    permiten conocer el SCN alcanzado por los datafiles después de una
-    recuperación. Se excluye ``PDB$SEED`` (CON_ID=2) porque es de solo lectura
-    y su checkpoint no avanza con la actividad normal de la base de datos.
+    La consulta se limita a vistas dinámicas disponibles en Oracle Database
+    Standard Edition 2. El estado de recuperación se estima comprobando si hay
+    una sesión RMAN activa: en este piloto la recuperación se ejecuta mediante
+    RMAN y no mediante los procesos gestionados de Oracle Data Guard.
     """
 
     sql = """
 select 'INSTANCE_STATUS=' || status from v$instance;
 select 'DATABASE_STATUS=' || database_status from v$instance;
+select 'DB_UNIQUE_NAME=' || db_unique_name from v$database;
 select 'DATABASE_ROLE=' || database_role from v$database;
 select 'OPEN_MODE=' || open_mode from v$database;
 select 'LOG_MODE=' || log_mode from v$database;
 select 'CURRENT_SCN=' || current_scn from v$database;
-"""
-    if detail:
-        sql += """
-select 'DATAFILE_CHECKPOINT_SCN_MIN=' || nvl(to_char(min(checkpoint_change#)), 'UNKNOWN')
-  from v$datafile_header
- where con_id <> 2;
-select 'DATAFILE_CHECKPOINT_SCN_MAX=' || nvl(to_char(max(checkpoint_change#)), 'UNKNOWN')
-  from v$datafile_header
- where con_id <> 2;
+select 'RECOVERY_STATUS=' ||
+       case when count(*) > 0 then 'RUNNING' else 'IDLE' end
+  from v$session
+ where lower(program) like 'rman%'
+    or lower(module) like 'rman%';
 """
     result = run_sqlplus(node, sql, timeout=timeout)
     if not result.ok:
@@ -85,12 +81,14 @@ select 'DATAFILE_CHECKPOINT_SCN_MAX=' || nvl(to_char(max(checkpoint_change#)), '
 
 
 def redo_summary(node, applied_through_datafiles=False, timeout=30):
-    """Consulta el último archived redo relevante para el estado del nodo.
+    """Consulta el último archived redo relevante y su referencia temporal.
 
     En primaria devuelve el archived redo con mayor ``next_change#`` de la
     encarnación actual. En standby limita la consulta a los archived redo cuyo
     ``next_change#`` está cubierto por el checkpoint mínimo de los datafiles,
-    para no confundir un redo recibido con uno aplicado.
+    para no confundir un redo recibido con uno aplicado. La fecha se toma del
+    mismo redo seleccionado por ``next_change#`` y permite estimar el lag
+    temporal respecto al último redo archivado en primaria.
     """
 
     applied_condition = ""
@@ -117,6 +115,14 @@ select 'LAST_REDO_NEXT_CHANGE=' || nvl(to_char(max(next_change#)), 'UNKNOWN')
   from v$archived_log
  where archived = 'YES'
    and resetlogs_change# = (select resetlogs_change# from v$database){applied_condition};
+select 'LAST_REDO_TIME=' ||
+       nvl(to_char(
+           max(completion_time) keep (dense_rank last order by next_change#),
+           'YYYY-MM-DD HH24:MI:SS'
+       ), 'UNKNOWN')
+  from v$archived_log
+ where archived = 'YES'
+   and resetlogs_change# = (select resetlogs_change# from v$database){applied_condition};
 """.format(
         applied_condition=applied_condition
     )
@@ -127,6 +133,7 @@ select 'LAST_REDO_NEXT_CHANGE=' || nvl(to_char(max(next_change#)), 'UNKNOWN')
             "last_redo_thread": "UNKNOWN",
             "last_redo_sequence": "UNKNOWN",
             "last_redo_next_change": "UNKNOWN",
+            "last_redo_time": "UNKNOWN",
             "error": result.stderr.strip() or result.stdout.strip(),
             "raw": result.summary(),
         }
@@ -135,6 +142,7 @@ select 'LAST_REDO_NEXT_CHANGE=' || nvl(to_char(max(next_change#)), 'UNKNOWN')
     values.setdefault("last_redo_thread", "UNKNOWN")
     values.setdefault("last_redo_sequence", "UNKNOWN")
     values.setdefault("last_redo_next_change", "UNKNOWN")
+    values.setdefault("last_redo_time", "UNKNOWN")
     return values
 
 

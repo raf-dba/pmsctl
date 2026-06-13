@@ -3,8 +3,9 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 
-from pmsctl import storage
+from pmsctl import commands, storage
 from pmsctl.errors import PmsctlError
 
 
@@ -65,6 +66,30 @@ class StorageTest(unittest.TestCase):
         path = self._write_config(data)
         with self.assertRaises(PmsctlError):
             storage.import_config(path)
+
+    @mock.patch("pmsctl.commands.audit.log_event")
+    def test_config_list_incluye_resumen_de_estados(self, log_event):
+        path = self._write_config(self._valid_config())
+        storage.import_config(path)
+
+        result = commands.list_configs()
+
+        self.assertEqual(result["configurations"], ["prod_to_dr"])
+        self.assertEqual(result["configuration_states"], {"prod_to_dr": "REGISTERED"})
+        self.assertEqual(result["count"], 1)
+        self.assertIn("message", result)
+
+    @mock.patch("pmsctl.commands.audit.log_event")
+    @mock.patch("pmsctl.commands.audit.read_history", return_value=[])
+    def test_history_informa_si_no_existen_eventos(self, read_history, log_event):
+        path = self._write_config(self._valid_config())
+        storage.import_config(path)
+
+        result = commands.history("prod_to_dr")
+
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["count"], 0)
+        self.assertIn("No historical events", result["message"])
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import unittest
+from unittest import mock
 
-from pmsctl import validators
+from pmsctl import commands, validators
 
 
 class ValidatorsTest(unittest.TestCase):
@@ -15,6 +16,19 @@ class ValidatorsTest(unittest.TestCase):
 
         self.assertEqual(check["status"], "ERROR")
         self.assertEqual(check["recommended_action"], "Corrija el problema.")
+
+    @mock.patch("pmsctl.commands.audit.log_event")
+    @mock.patch("pmsctl.validators.validate_environment")
+    @mock.patch("pmsctl.commands.storage.load_config")
+    def test_validate_incluye_mensaje_resumen(self, load_config, validate_environment, log_event):
+        load_config.return_value = {"name": "prod_to_dr"}
+        validate_environment.return_value = {"result": "OK", "checks": []}
+
+        result = commands.validate("prod_to_dr")
+
+        self.assertEqual(result["configuration"], "prod_to_dr")
+        self.assertEqual(result["action"], "VALIDATE")
+        self.assertIn("message", result)
 
 
 if __name__ == "__main__":
