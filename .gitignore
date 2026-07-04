@@ -5,6 +5,7 @@ __pycache__/
 
 # Runtime pmsctl
 var/
+tests/
 
 # Local environment
 .env

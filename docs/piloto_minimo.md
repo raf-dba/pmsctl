@@ -2,17 +2,17 @@
 
 Este piloto implementa una parte acotada de la herramienta descrita en el TFG:
 configuracion, validacion, estado, lag e historico. No crea, borra, restaura ni
-recupera bases de datos. Todas las operaciones contra Oracle son consultas o
+recupera bases de datos. Todas las operaciones contra las bases de datos Oracle son consultas o
 comprobaciones no destructivas.
 
 ## Requisitos
 
 - Python 3.6.
 - Linux en el nodo central y en los nodos Oracle.
-- Oracle Database 19c SE2 con `sqlplus` disponible.
+- Oracle Database 19c SE2 o superior con `sqlplus` disponible.
 - Usuario de sistema operativo con permisos para ejecutar `sqlplus / as sysdba`.
 - SSH por clave desde el nodo central hacia la standby.
-- Primaria en modo `ARCHIVELOG` para que el lag tenga sentido operativo.
+- Base de datos primaria en modo `ARCHIVELOG`.
 
 ## Instalacion basica
 
@@ -37,8 +37,7 @@ pmsctl config list
 pmsctl config show prod_to_dr
 ```
 
-No se deben incluir contrasenas en el JSON. El piloto rechaza campos cuyo nombre
-parezca contener secretos.
+No se deben incluir contrasenas en el JSON. 
 
 Los ajustes `max_transfer_lag_minutes` y `max_apply_lag_minutes` permiten
 definir por separado los umbrales que utiliza el comando `lag`. Si no existen,
