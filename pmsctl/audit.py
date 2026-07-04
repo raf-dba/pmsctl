@@ -12,22 +12,18 @@ import os
 
 from pmsctl import paths
 
-
+"""Devuelve la fecha actual en UTC con un formato estable."""
 def utc_now():
-    """Devuelve la fecha actual en UTC con un formato estable."""
-
+    
     return datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
-
+"""Registra una operación administrativa."""
 def log_event(configuration, command, result, message="", details=None):
-    """Registra una operación administrativa.
-
-    ``details`` debe contener solo información serializable a JSON. El registro
-    nunca debe interrumpir una operación principal; si falla por permisos, el
-    error será visible en la propia ejecución del sistema operativo.
-    """
-
+    
+    """Validamos/intentamos crear los directorios en los que almacenar la información."""
     paths.ensure_runtime_dirs()
+
+    """Preparamos el registro a almacenar."""
     event = {
         "timestamp": utc_now(),
         "user": getpass.getuser(),
@@ -37,7 +33,7 @@ def log_event(configuration, command, result, message="", details=None):
         "message": message,
         "details": details or {},
     }
-
+    """Abrimos los dos ficheros de log."""
     with open(paths.events_file(), "a") as handle:
         handle.write(json.dumps(event, sort_keys=True) + "\n")
 
@@ -49,9 +45,9 @@ def log_event(configuration, command, result, message="", details=None):
         )
     return event
 
-
+"""Lee el histórico estructurado filtrando por configuración si se indica."""
 def read_history(configuration=None, limit=20):
-    """Lee el histórico estructurado filtrando por configuración si se indica."""
+    
 
     path = paths.events_file()
     if not os.path.exists(path):

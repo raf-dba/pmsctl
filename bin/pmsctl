@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-"""Punto de entrada ejecutable de la herramienta pmsctl.
-
-Este fichero mantiene el ejecutable lo más pequeño posible. Toda la lógica real
-vive dentro del paquete ``pmsctl`` para facilitar pruebas y futuras ampliaciones.
-"""
+"""Punto de entrada ejecutable de la herramienta pmsctl."""
 
 import os
 import sys
 
-
+"""Ajustes para encontrar el paquete pmsctl y poder cargarlo."""
 RAIZ_PROYECTO = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 if RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, RAIZ_PROYECTO)
 
+""" el noqa es un "workarround" para el warning que genera importar dentro del codigo
+usado para evitar problemas si no tenemos el proyecto en el path."""
 from pmsctl.cli import main  # noqa: E402
-
 
 if __name__ == "__main__":
     sys.exit(main())

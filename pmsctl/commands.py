@@ -2,31 +2,27 @@
 
 from pmsctl import audit, oracle, storage
 
-
+"""Retornamos un valor fijo y comprensible del estao de conexión a las bases de datos."""
 def _oracle_status_label(data):
-    """Traduce la conectividad Oracle a la etiqueta operativa del TFG."""
-
+    
     return "ONLINE" if data.get("reachable") == "YES" else "UNKNOWN"
 
-
+"""Convierte el modo de archivado Oracle en una indicación sencilla para el operador."""
 def _archivelog_label(log_mode):
-    """Convierte el modo Oracle en una indicación sencilla para el operador."""
-
+    
     if log_mode == "ARCHIVELOG":
         return "ENABLED"
     if log_mode in (None, "UNKNOWN"):
         return "UNKNOWN"
     return "DISABLED"
 
-
+"""Define la sección de estado de una primaria o una réplica."""
 def _status_from_node(label, node, timeout):
-    """Construye la sección de estado de una primaria o una réplica.
 
-    Primero se consulta el estado básico. Si el nodo no está disponible no se
-    lanzan consultas adicionales, porque solo añadirían esperas y errores
-    repetidos. En una réplica se distinguen expresamente los redo transferidos
+    """Primero se consulta el estado del nodo y la base de datos ai no estan disponibles no se
+    lanzan consultas adicionales. En una réplica se distinguen expresamente los redo transferidos
     de los aplicados: los primeros existen en ``v$archived_log`` y los segundos
-    están cubiertos por el checkpoint mínimo de los datafiles.
+    quedan incluidos en el checkpoint mínimo de los datafiles.
     """
 
     data = oracle.database_status(node, timeout=timeout)

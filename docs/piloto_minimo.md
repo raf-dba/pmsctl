@@ -42,8 +42,7 @@ parezca contener secretos.
 
 Los ajustes `max_transfer_lag_minutes` y `max_apply_lag_minutes` permiten
 definir por separado los umbrales que utiliza el comando `lag`. Si no existen,
-se utiliza `lag_warning_minutes` para mantener compatibilidad con configuraciones
-anteriores.
+se utiliza `lag_warning_minutes`. 
 
 ## Comandos principales
 
@@ -69,8 +68,7 @@ pmsctl --json status prod_to_dr
   nodo no esta disponible.
 - `lag` diferencia el retraso de transferencia del retraso de aplicacion. En la
   replica considera aplicado el ultimo archived redo cuyo `NEXT_CHANGE#` esta
-  cubierto por el checkpoint minimo de los datafiles; que un redo tenga
-  `ARCHIVED='YES'` no implica por si solo que ya se haya aplicado.
+  cubierto por el checkpoint minimo de los datafiles.
 - `history` muestra eventos registrados en `var/logs/events.jsonl`.
 
 Si Oracle no puede proporcionar un dato, el piloto devuelve `UNKNOWN` en lugar de

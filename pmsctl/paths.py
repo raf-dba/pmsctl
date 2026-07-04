@@ -3,6 +3,8 @@
 El piloto almacena configuración, estado y logs en ficheros locales. La ruta
 base puede cambiarse con la variable de entorno ``PMSCTL_HOME`` para facilitar
 pruebas o despliegues sin tocar el código.
+
+En futuras versiones se puede plantear el uso de alguna base de datos especializada
 """
 
 import os
