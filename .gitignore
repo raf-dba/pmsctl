@@ -5,7 +5,12 @@ __pycache__/
 
 # Runtime pmsctl
 var/
+
+# Pruebas
 tests/
+
+# Config entornos
+.vscode
 
 # Local environment
 .env
